@@ -1,0 +1,96 @@
+/* @import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: #030303;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(212, 175, 55, 0.08) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, rgba(212, 175, 55, 0.05) 0, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(212, 175, 55, 0.08) 0, transparent 50%);
+    color: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .btn-gold {
+    @apply bg-gold-500 text-dark-800 font-bold py-3 px-8 rounded-full
+           transition-all duration-300 hover:bg-gold-400 hover:shadow-lg
+           hover:shadow-gold-500/40 active:scale-95 cursor-pointer
+           flex items-center justify-center gap-2 border border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-3xl
+           shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-300;
+  }
+
+  .glass-panel {
+    @apply bg-white/[0.01] backdrop-blur-xl border-y border-white/5 shadow-2xl;
+  }
+
+  .glass-input {
+    @apply w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4
+           text-white placeholder-white/20 focus:outline-none focus:border-gold-500/50
+           focus:bg-white/[0.05] transition-all duration-300 text-sm backdrop-blur-sm;
+  }
+
+  .card-dark {
+    @apply glass-card;
+  }
+
+  .input-dark {
+    @apply glass-input;
+  }
+
+  .gold-gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-600 via-gold-200 to-gold-600;
+  }
+}
+
+@layer utilities {
+  .glass-reflection {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #fde68a;
+}
