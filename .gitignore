@@ -64,8 +64,10 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.local
 backend/.env
 frontend/.env
+frontend/.env.local
 
 # Google Cloud Service Account Credentials
 service-account.json
