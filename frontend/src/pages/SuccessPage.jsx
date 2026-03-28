@@ -6,6 +6,7 @@ import confetti from 'canvas-confetti'
 export default function SuccessPage() {
   const navigate = useNavigate()
   const receiptId = localStorage.getItem('receiptId') || `FA2026-${Math.floor(1000 + Math.random() * 9000)}`
+  const rollNumber = localStorage.getItem('rollNumber') || 'Unknown Member'
   const fired = useRef(false)
 
   useEffect(() => {
@@ -83,15 +84,21 @@ export default function SuccessPage() {
         
         <div className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-6 mb-10 backdrop-blur-sm group">
           <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em] mb-3">Transmission Receipt</p>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-gold-500/40 font-black text-xs">#</span>
+          <div className="flex flex-col items-center justify-center gap-1">
             <p className="text-white font-mono text-sm font-bold tracking-widest group-hover:text-gold-500 transition-colors uppercase">
-              {receiptId.split('-')[1] || receiptId}
+              {receiptId}
+            </p>
+            <p className="text-gold-500/60 font-mono text-[10px] font-bold uppercase tracking-tight">
+              {rollNumber}
             </p>
           </div>
         </div>
 
         <div className="space-y-4 w-full">
+          <p className="text-green-400/80 text-[10px] font-black uppercase tracking-widest mb-4">
+            "Your vote has been successfully recorded."
+          </p>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -103,10 +110,10 @@ export default function SuccessPage() {
           </motion.button>
           
           <button
-            onClick={() => navigate('/results')}
+            onClick={() => navigate('/admin')}
             className="w-full h-14 rounded-2xl bg-white/[0.03] border border-white/5 text-white/40 font-bold text-[10px] tracking-widest uppercase hover:bg-white/[0.08] hover:text-white transition-all"
           >
-            View Live Standings
+            View Live Results
           </button>
         </div>
 

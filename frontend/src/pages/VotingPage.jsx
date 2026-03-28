@@ -1,31 +1,20 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 
 const AWARDS = [
-  { key: 'sleepyHead',          emoji: '😴', title: 'Mr / Ms Sleepy Head',       desc: 'The one who mastered the art of sleeping during lectures without getting caught.' },
-  { key: 'classComedian',       emoji: '😂', title: 'Class Comedian',             desc: 'The human antidepressant who kept the mood light during exams.' },
-  { key: 'lateComer',           emoji: '⏰', title: 'Late Comer',                 desc: 'Always promising "I\'ll be there in 5 min" — adds 30 every time.' },
-  { key: 'silentAssassin',      emoji: '😶', title: 'Silent Assassin',            desc: 'Quiet in the halls, but surprisingly loud with their achievements.' },
-  { key: 'futureCeo',           emoji: '💼', title: 'Future CEO',                 desc: 'Already has a startup idea, a LinkedIn, and three side hustles.' },
-  { key: 'fashionIcon',         emoji: '👑', title: 'Fashion Icon',               desc: 'Turns every campus day into a runway show.' },
+  { key: 'sleepy_head',          emoji: '😴', title: 'Mr / Ms Sleepy Head',       desc: 'The one who mastered the art of sleeping during lectures without getting caught.' },
+  { key: 'class_comedian',       emoji: '😂', title: 'Class Comedian',             desc: 'The human antidepressant who kept the mood light during exams.' },
+  { key: 'late_comer',           emoji: '⏰', title: 'Late Comer',                 desc: 'Always promising "I\'ll be there in 5 min" — adds 30 every time.' },
+  { key: 'silent_assassin',      emoji: '😶', title: 'Silent Assassin',            desc: 'Quiet in the halls, but surprisingly loud with their achievements.' },
+  { key: 'future_ceo',           emoji: '💼', title: 'Future CEO',                 desc: 'Already has a startup idea, a LinkedIn, and three side hustles.' },
+  { key: 'fashion_icon',         emoji: '👑', title: 'Fashion Icon',               desc: 'Turns every campus day into a runway show.' },
   { key: 'photogenic',          emoji: '📸', title: 'Most Photogenic',            desc: 'Looks great from every angle — even candid shots.' },
-  { key: 'friendEveryoneNeeds', emoji: '🤗', title: 'Friend Everyone Needs',      desc: 'Always there with advice, a snack, or a shoulder to lean on.' },
-  { key: 'brainOfBatch',        emoji: '🧠', title: 'Brain of the Batch',         desc: 'The walking encyclopedia everyone texts before exams.' },
-  { key: 'futureProfessor',     emoji: '📚', title: 'Most Likely to Become Prof', desc: 'Explains concepts better than the professors themselves.' },
+  { key: 'friend_everyone_needs', emoji: '🤗', title: 'Friend Everyone Needs',      desc: 'Always there with advice, a snack, or a shoulder to lean on.' },
+  { key: 'brain_of_batch',        emoji: '🧠', title: 'Brain of the Batch',         desc: 'The walking encyclopedia everyone texts before exams.' },
+  { key: 'future_professor',     emoji: '📚', title: 'Most Likely to Become Prof', desc: 'Explains concepts better than the professors themselves.' },
 ]
-
-async function getVisitorId() {
-  try {
-    const FP = await import('@fingerprintjs/fingerprintjs')
-    const fp = await FP.default.load()
-    const result = await fp.get()
-    return result.visitorId
-  } catch {
-    return 'fp_' + Math.random().toString(36).slice(2, 12)
-  }
-}
 
 export default function VotingPage() {
   const navigate = useNavigate()
@@ -35,17 +24,19 @@ export default function VotingPage() {
   const [error, setError] = useState('')
   const [direction, setDirection] = useState(1)
   const [loading, setLoading] = useState(false)
-  const visitorRef = useRef(null)
+  const rollNumber = localStorage.getItem('rollNumber')
 
   useEffect(() => {
+    if (!rollNumber) {
+      navigate('/', { replace: true })
+      return
+    }
+
     const checkVoteStatus = async () => {
-      const id = await getVisitorId()
-      visitorRef.current = id
-      
       if (localStorage.getItem('voted') === 'true') {
         try {
           // Verify with server if vote still exists
-          const res = await axios.get(`/api/vote-status?visitorId=${id}`)
+          const res = await axios.get(`/api/vote-status?rollNumber=${rollNumber}`)
           if (!res.data.voted) {
             localStorage.removeItem('voted')
             localStorage.removeItem('receiptId')
@@ -59,13 +50,13 @@ export default function VotingPage() {
     }
     
     checkVoteStatus()
-  }, [])
+  }, [rollNumber, navigate])
 
   // sync inputVal when navigating between cards
   useEffect(() => {
     setInputVal(votes[AWARDS[current].key] || '')
     setError('')
-  }, [current])
+  }, [current, votes])
 
   const award = AWARDS[current]
   const progress = ((current + 1) / AWARDS.length) * 100
@@ -94,17 +85,17 @@ export default function VotingPage() {
   const submit = async (finalVotes) => {
     setLoading(true)
     try {
-      const visitorId = visitorRef.current || 'fp_' + Math.random().toString(36).slice(2, 12)
-      const res = await axios.post('/api/votes', { visitorId, ...finalVotes })
+      const res = await axios.post('/api/votes', { rollNumber, ...finalVotes })
       localStorage.setItem('voted', 'true')
       localStorage.setItem('receiptId', res.data.receiptId)
       navigate('/success')
     } catch (err) {
       if (err.response?.status === 409) {
         localStorage.setItem('voted', 'true')
+        localStorage.setItem('receiptId', err.response.data.receiptId)
         navigate('/success')
       } else {
-        setError('Something went wrong. Please try again.')
+        setError(err.response?.data?.error || 'Something went wrong. Please try again.')
         setLoading(false)
       }
     }

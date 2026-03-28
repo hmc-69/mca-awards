@@ -8,16 +8,16 @@ const ADMIN_SECRET = 'farewell2026admin'
 const ADMIN_KEY = 'farewell2026admin'
 
 const AWARD_LABELS = {
-  sleepyHead:          { label: 'Mr/Ms Sleepy Head',     emoji: '😴' },
-  classComedian:       { label: 'Class Comedian',         emoji: '😂' },
-  lateComer:           { label: 'Late Comer',             emoji: '⏰' },
-  silentAssassin:      { label: 'Silent Assassin',        emoji: '😶' },
-  futureCeo:           { label: 'Future CEO',             emoji: '💼' },
-  fashionIcon:         { label: 'Fashion Icon',           emoji: '👑' },
+  sleepy_head:          { label: 'Mr/Ms Sleepy Head',     emoji: '😴' },
+  class_comedian:       { label: 'Class Comedian',         emoji: '😂' },
+  late_comer:           { label: 'Late Comer',             emoji: '⏰' },
+  silent_assassin:      { label: 'Silent Assassin',        emoji: '😶' },
+  future_ceo:           { label: 'Future CEO',             emoji: '💼' },
+  fashion_icon:         { label: 'Fashion Icon',           emoji: '👑' },
   photogenic:          { label: 'Most Photogenic',        emoji: '📸' },
-  friendEveryoneNeeds: { label: 'Friend Everyone Needs',  emoji: '🤗' },
-  brainOfBatch:        { label: 'Brain of the Batch',     emoji: '🧠' },
-  futureProfessor:     { label: 'Future Professor',       emoji: '📚' },
+  friend_everyone_needs: { label: 'Friend Everyone Needs',  emoji: '🤗' },
+  brain_of_batch:        { label: 'Brain of the Batch',     emoji: '🧠' },
+  future_professor:     { label: 'Future Professor',       emoji: '📚' },
 }
 
 const GOLD_SHADES = ['#D4AF37', '#fde68a', '#b8960c', '#fbbf24', '#92700a']
@@ -223,7 +223,7 @@ function AuditLogTab({ votes }) {
                 </span>
               </div>
               <p className="text-white/30 text-[9px] font-mono tracking-tighter truncate font-bold">
-                TRACE: {(vote.visitorId || vote.id || '').toUpperCase()}
+                TRACE: {(vote.roll_number || vote.id || '').toUpperCase()}
               </p>
               <div className="mt-3 flex gap-2">
                 <span className="px-2 py-0.5 rounded-md bg-white/[0.03] text-[8px] font-bold text-gold-500/60 uppercase tracking-widest border border-white/5">

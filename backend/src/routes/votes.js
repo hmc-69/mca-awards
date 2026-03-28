@@ -8,18 +8,19 @@ const ADMIN_KEY = process.env.ADMIN_KEY || ADMIN_SECRET
 const VOTES_COLLECTION = 'votes'
 
 const VOTE_FIELDS = [
-  'sleepyHead', 'classComedian', 'lateComer', 'silentAssassin',
-  'futureCeo', 'fashionIcon', 'photogenic', 'friendEveryoneNeeds',
-  'brainOfBatch', 'futureProfessor',
+  'sleepy_head', 'class_comedian', 'late_comer', 'silent_assassin',
+  'future_ceo', 'fashion_icon', 'photogenic', 'friend_everyone_needs',
+  'brain_of_batch', 'future_professor',
 ]
 
-// ─── GET /api/vote-status  (check if user already voted) ───────────────────
+// ─── GET /api/vote-status  (check if roll_number already voted) ─────────────
 router.get('/vote-status', async (req, res) => {
   try {
-    const { visitorId } = req.query
-    if (!visitorId) return res.json({ voted: false })
+    const { rollNumber } = req.query
+    if (!rollNumber) return res.status(400).json({ error: 'Missing rollNumber' })
     
-    const doc = await db.collection(VOTES_COLLECTION).doc(visitorId).get()
+    const formattedRoll = String(rollNumber).toLowerCase().trim()
+    const doc = await db.collection(VOTES_COLLECTION).doc(formattedRoll).get()
     
     if (doc.exists && doc.data().is_active !== false) {
       return res.json({ voted: true })
@@ -35,25 +36,32 @@ router.get('/vote-status', async (req, res) => {
 // ─── POST /api/votes  (submit a vote) ──────────────────────────────────────
 router.post('/votes', async (req, res) => {
   try {
-    const { visitorId, ...fields } = req.body
+    const { rollNumber, ...fields } = req.body
 
-    if (!visitorId) {
-      return res.status(400).json({ error: 'Missing visitorId' })
+    if (!rollNumber) {
+      return res.status(400).json({ error: 'Missing rollNumber' })
+    }
+
+    const formattedRoll = String(rollNumber).toLowerCase().trim()
+    const rollRegex = /^chn24mca-20[0-9]{2}$/
+
+    if (!rollRegex.test(formattedRoll)) {
+      return res.status(400).json({ error: 'Invalid roll number format' })
     }
 
     // Check for duplicate (active votes only)
-    const existing = await db.collection(VOTES_COLLECTION).doc(visitorId).get()
+    const existing = await db.collection(VOTES_COLLECTION).doc(formattedRoll).get()
     if (existing.exists && existing.data().is_active !== false) {
       return res.status(409).json({
-        error: 'Already voted',
+        error: 'You have already submitted your vote.',
         receiptId: existing.data().receiptId,
       })
     }
 
     // Build vote document (only permitted fields)
     const voteData = { 
-      visitorId, 
-      createdAt: new Date().toISOString(),
+      roll_number: formattedRoll, 
+      created_at: new Date().toISOString(),
       is_active: true // For soft reset support
     }
     VOTE_FIELDS.forEach(f => { if (fields[f]) voteData[f] = String(fields[f]).trim().slice(0, 100) })
@@ -62,8 +70,8 @@ router.post('/votes', async (req, res) => {
     const receiptId = `FA2026-${Math.floor(1000 + Math.random() * 9000)}`
     voteData.receiptId = receiptId
 
-    // Save — use visitorId as document ID for uniqueness
-    await db.collection(VOTES_COLLECTION).doc(visitorId).set(voteData)
+    // Save — use formattedRoll as document ID for uniqueness
+    await db.collection(VOTES_COLLECTION).doc(formattedRoll).set(voteData)
 
     return res.status(201).json({ success: true, receiptId })
   } catch (err) {
@@ -111,14 +119,14 @@ router.get('/votes', async (req, res) => {
 
   try {
     const snapshot = await db.collection(VOTES_COLLECTION)
-      .orderBy('createdAt', 'desc')
+      .orderBy('is_active', 'desc')
       .get()
 
     // Include legacy votes (is_active undefined) and active votes
     const votes = snapshot.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(v => v.is_active !== false)
-      .slice(0, 200)
+      .slice(0, 500)
 
     return res.json(votes)
   } catch (err) {
