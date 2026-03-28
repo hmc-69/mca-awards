@@ -41,6 +41,14 @@ function LeaderboardTab({ results }) {
     </div>
   )
   const categories = Object.entries(AWARD_LABELS).filter(([key]) => results[key]?.length > 0)
+  
+  if (categories.length === 0) return (
+    <div className="glass-card p-12 text-center border-white/5 bg-white/[0.02]">
+      <p className="text-white/20 text-xs font-bold uppercase tracking-[0.3em] italic">No Data Stream Found</p>
+      <p className="text-white/10 text-[9px] mt-2 uppercase tracking-widest font-black">Awaiting student transmissions...</p>
+    </div>
+  )
+
   const featured = categories.slice(0, 3).map(([key]) => {
     const top = (results[key] || []).slice(0, 3)
     return { key, ...AWARD_LABELS[key], top }
@@ -141,7 +149,13 @@ function CategoriesTab({ results }) {
       <p className="text-white/20 text-[10px] font-bold tracking-widest uppercase">Preparing Analytics...</p>
     </div>
   )
-  const categories = Object.entries(AWARD_LABELS)
+  const categories = Object.entries(AWARD_LABELS).filter(([key]) => results[key]?.length > 0)
+
+  if (categories.length === 0) return (
+    <div className="glass-card p-12 text-center border-white/5 bg-white/[0.02]">
+      <p className="text-white/20 text-xs font-bold uppercase tracking-[0.3em] italic">No Analytics Available</p>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
