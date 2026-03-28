@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import axios from 'axios'
+import { db } from '../firebase'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 const AWARDS = [
   { key: 'sleepy_head',          emoji: '😴', title: 'Mr / Ms Sleepy Head',       desc: 'The one who mastered the art of sleeping during lectures without getting caught.' },
@@ -35,9 +36,9 @@ export default function VotingPage() {
     const checkVoteStatus = async () => {
       if (localStorage.getItem('voted') === 'true') {
         try {
-          // Verify with server if vote still exists
-          const res = await axios.get(`/api/vote-status?rollNumber=${rollNumber}`)
-          if (!res.data.voted) {
+          const docRef = doc(db, 'votes', rollNumber)
+          const docSnap = await getDoc(docRef)
+          if (!docSnap.exists() || docSnap.data().is_active === false) {
             localStorage.removeItem('voted')
             localStorage.removeItem('receiptId')
           } else {
@@ -52,7 +53,6 @@ export default function VotingPage() {
     checkVoteStatus()
   }, [rollNumber, navigate])
 
-  // sync inputVal when navigating between cards
   useEffect(() => {
     setInputVal(votes[AWARDS[current].key] || '')
     setError('')
@@ -65,7 +65,7 @@ export default function VotingPage() {
   const handleNext = async () => {
     const val = inputVal.trim()
     if (!val) { setError('Please nominate a classmate before continuing!'); return }
-    const newVotes = { ...votes, [award.id]: val }
+    const newVotes = { ...votes, [award.key]: val }
     setVotes(newVotes)
 
     if (isLast) {
@@ -73,13 +73,13 @@ export default function VotingPage() {
       return
     }
     setDirection(1)
-    setCurrentStep(c => c + 1)
+    setCurrent(c => c + 1)
   }
 
   const handleBack = () => {
-    if (currentStep === 0) { navigate('/'); return }
+    if (current === 0) { navigate('/'); return }
     setDirection(-1)
-    setCurrentStep(c => c - 1)
+    setCurrent(c => c - 1)
   }
 
   const submit = async (finalVotes) => {
