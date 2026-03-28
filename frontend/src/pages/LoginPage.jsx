@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import axios from 'axios'
+import { db } from '../firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
   id: i,
@@ -18,37 +19,41 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const validateRollNumber = (roll) => {
-    const regex = /^chn24mca-20[0-9]{2}$/
-    return regex.test(roll.toLowerCase().trim())
-  }
+  useEffect(() => {
+    if (localStorage.getItem('voted') === 'true') {
+      navigate('/success')
+    }
+  }, [navigate])
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault()
     setError('')
     
     const formattedRoll = rollNumber.toLowerCase().trim()
+    const regex = /^chn24mca-20[0-9]{2}$/
     
     if (!formattedRoll) {
       setError('Please enter your roll number.')
       return
     }
 
-    if (!validateRollNumber(formattedRoll)) {
+    if (!regex.test(formattedRoll)) {
       setError('Invalid format. Use chn24mca-20xx')
       return
     }
 
     setLoading(true)
     try {
-      const res = await axios.get(`/api/vote-status?rollNumber=${formattedRoll}`)
-      localStorage.setItem('rollNumber', formattedRoll)
+      const docRef = doc(db, 'votes', formattedRoll)
+      const docSnap = await getDoc(docRef)
       
-      if (res.data.voted) {
+      if (docSnap.exists() && docSnap.data().is_active !== false) {
         localStorage.setItem('voted', 'true')
+        localStorage.setItem('rollNumber', formattedRoll)
+        localStorage.setItem('receiptId', docSnap.data().receiptId || 'VOTE-ALREADY-SUBMITTED')
         navigate('/success')
       } else {
-        localStorage.removeItem('voted')
+        localStorage.setItem('rollNumber', formattedRoll)
         navigate('/vote')
       }
     } catch (err) {

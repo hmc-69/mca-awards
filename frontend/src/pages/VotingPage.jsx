@@ -65,7 +65,7 @@ export default function VotingPage() {
   const handleNext = async () => {
     const val = inputVal.trim()
     if (!val) { setError('Please nominate a classmate before continuing!'); return }
-    const newVotes = { ...votes, [award.key]: val }
+    const newVotes = { ...votes, [award.id]: val }
     setVotes(newVotes)
 
     if (isLast) {
@@ -73,31 +73,47 @@ export default function VotingPage() {
       return
     }
     setDirection(1)
-    setCurrent(c => c + 1)
+    setCurrentStep(c => c + 1)
   }
 
   const handleBack = () => {
-    if (current === 0) { navigate('/'); return }
+    if (currentStep === 0) { navigate('/'); return }
     setDirection(-1)
-    setCurrent(c => c - 1)
+    setCurrentStep(c => c - 1)
   }
 
   const submit = async (finalVotes) => {
     setLoading(true)
+    setError('')
     try {
-      const res = await axios.post('/api/votes', { rollNumber, ...finalVotes })
+      const receiptId = `FA2026-${Math.floor(1000 + Math.random() * 9000)}`
+      const voteData = {
+        ...finalVotes,
+        roll_number: rollNumber,
+        receiptId: receiptId,
+        created_at: serverTimestamp(),
+        is_active: true
+      }
+
+      const docRef = doc(db, 'votes', rollNumber)
+      const docSnap = await getDoc(docRef)
+      
+      if (docSnap.exists() && docSnap.data().is_active !== false) {
+        localStorage.setItem('voted', 'true')
+        localStorage.setItem('receiptId', docSnap.data().receiptId || 'VOTE-SUBMITTED')
+        navigate('/success')
+        return
+      }
+
+      await setDoc(docRef, voteData)
+      
       localStorage.setItem('voted', 'true')
-      localStorage.setItem('receiptId', res.data.receiptId)
+      localStorage.setItem('receiptId', receiptId)
       navigate('/success')
     } catch (err) {
-      if (err.response?.status === 409) {
-        localStorage.setItem('voted', 'true')
-        localStorage.setItem('receiptId', err.response.data.receiptId)
-        navigate('/success')
-      } else {
-        setError(err.response?.data?.error || 'Something went wrong. Please try again.')
-        setLoading(false)
-      }
+      console.error(err)
+      setError('Failed to record votes. Please try again.')
+      setLoading(false)
     }
   }
 

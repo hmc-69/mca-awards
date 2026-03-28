@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti'
 
 export default function SuccessPage() {
   const navigate = useNavigate()
-  const receiptId = localStorage.getItem('receiptId') || `FA2026-${Math.floor(1000 + Math.random() * 9000)}`
+  const receiptId = localStorage.getItem('receiptId') || 'FA2026-XXXX'
   const rollNumber = localStorage.getItem('rollNumber') || 'Unknown Member'
   const fired = useRef(false)
 

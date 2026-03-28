@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import axios from 'axios'
+import { db } from '../firebase'
+import { collection, getDocs, query, orderBy, writeBatch, doc } from 'firebase/firestore'
 
 const ADMIN_SECRET = 'farewell2026admin'
 const ADMIN_KEY = 'farewell2026admin'
@@ -219,7 +220,7 @@ function AuditLogTab({ votes }) {
               <div className="flex justify-between items-start mb-1">
                 <p className="text-white/90 text-[11px] font-black uppercase tracking-wider">Vote Packet Verified</p>
                 <span className="text-white/20 font-mono text-[9px] font-bold">
-                  {vote.createdAt ? new Date(vote.createdAt).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
+                  {vote.created_at?.toDate ? vote.created_at.toDate().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
                 </span>
               </div>
               <p className="text-white/30 text-[9px] font-mono tracking-tighter truncate font-bold">
@@ -254,15 +255,15 @@ export default function AdminDashboard() {
   const [isResetting, setIsResetting] = useState(false)
   const [resetMessage, setResetMessage] = useState({ text: '', type: '' })
 
-  const secret = searchParams.get('secret')
+  const secretFromURL = searchParams.get('secret')
 
   useEffect(() => {
-    if (secret === ADMIN_SECRET) setAuthenticated(true)
+    if (secretFromURL === ADMIN_SECRET) setAuthenticated(true)
     else {
       const stored = sessionStorage.getItem('adminSecret')
       if (stored === ADMIN_SECRET) setAuthenticated(true)
     }
-  }, [secret])
+  }, [secretFromURL])
 
   useEffect(() => {
     if (!authenticated) return
@@ -273,14 +274,28 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [resResults, resVotes] = await Promise.all([
-        axios.get('/api/results'),
-        axios.get('/api/votes', { headers: { 'x-admin-secret': ADMIN_SECRET } }),
-      ])
-      setResults(resResults.data)
-      setVotes(resVotes.data)
+      const q = query(collection(db, 'votes'), orderBy('created_at', 'desc'))
+      const snapshot = await getDocs(q)
+      const allVotes = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.is_active !== false)
+      
+      // Client-side aggregation
+      const aggregatedResults = {}
+      Object.keys(AWARD_LABELS).forEach(field => {
+        const counts = {}
+        allVotes.forEach(doc => {
+          const name = doc[field]?.trim()
+          if (name) counts[name] = (counts[name] || 0) + 1
+        })
+        aggregatedResults[field] = Object.entries(counts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
+      })
+
+      setVotes(allVotes)
+      setResults(aggregatedResults)
     } catch (err) {
-      console.error('Failed to fetch admin data', err)
+      console.error('Failed to fetch firestore data', err)
     }
   }
 
@@ -297,20 +312,29 @@ export default function AdminDashboard() {
     setIsResetting(true)
     setResetMessage({ text: '', type: '' })
     try {
-      const res = await axios.delete(`/api/admin/reset?mode=${mode}`, {
-        headers: { 'x-admin-key': ADMIN_KEY }
+      const q = query(collection(db, 'votes'))
+      const snapshot = await getDocs(q)
+      const batch = writeBatch(db)
+      
+      snapshot.docs.forEach((docSnap) => {
+        if (mode === 'hard') {
+          batch.delete(docSnap.ref)
+        } else {
+          batch.update(docSnap.ref, { is_active: false })
+        }
       })
-      if (res.data.success) {
-        setResetMessage({ text: 'All votes have been permanently deleted!', type: 'success' })
-        setTimeout(() => {
-          setIsResetModalOpen(false)
-          setResetMessage({ text: '', type: '' })
-          fetchData()
-        }, 2000)
-      }
+      
+      await batch.commit()
+      
+      setResetMessage({ text: 'Database Reset Successful!', type: 'success' })
+      setTimeout(() => {
+        setIsResetModalOpen(false)
+        setResetMessage({ text: '', type: '' })
+        fetchData()
+      }, 2000)
     } catch (err) {
       console.error('Reset failed', err)
-      setResetMessage({ text: err.response?.data?.error || 'Failed to reset votes', type: 'error' })
+      setResetMessage({ text: 'Critical: Failed to reset database.', type: 'error' })
     } finally {
       setIsResetting(false)
     }
