@@ -9,16 +9,16 @@ const ADMIN_SECRET = 'farewell2026admin'
 const ADMIN_KEY = 'farewell2026admin'
 
 const AWARD_LABELS = {
-  sleepy_head:          { label: 'Mr/Ms Sleepy Head',     emoji: '😴' },
-  class_comedian:       { label: 'Class Comedian',         emoji: '😂' },
-  late_comer:           { label: 'Late Comer',             emoji: '⏰' },
-  silent_assassin:      { label: 'Silent Assassin',        emoji: '😶' },
-  future_ceo:           { label: 'Future CEO',             emoji: '💼' },
-  fashion_icon:         { label: 'Fashion Icon',           emoji: '👑' },
-  photogenic:          { label: 'Most Photogenic',        emoji: '📸' },
-  friend_everyone_needs: { label: 'Friend Everyone Needs',  emoji: '🤗' },
-  brain_of_batch:        { label: 'Brain of the Batch',     emoji: '🧠' },
-  future_professor:     { label: 'Future Professor',       emoji: '📚' },
+  kumbhakarnan: { label: 'കുംഭകർണ്ണൻ', emoji: '😴' },
+  maveli: { label: 'മാവേലി', emoji: '🎭' },
+  best_couple: { label: 'Best Couple', emoji: '🌈' },
+  kozhi: { label: 'ഗിരിരാജൻ കോഴി', emoji: '🐔' },
+  pavanaayi: { label: 'പവനായി', emoji: '📊' },
+  neelakuyil: { label: 'നീലക്കുയിൽ', emoji: '📸' },
+  nagavalli: { label: 'നാഗവല്ലി', emoji: '😶‍🌫️' },
+  pakalmaanyan: { label: 'പകൽ മാന്യൻ', emoji: '🌙' },
+  jetairways: { label: 'ജെറ്റ് എയർവേയ്സ്', emoji: '✈️' },
+  valli: { label: 'വള്ളി', emoji: '🧠' },
 }
 
 const GOLD_SHADES = ['#D4AF37', '#fde68a', '#b8960c', '#fbbf24', '#92700a']
@@ -41,7 +41,7 @@ function LeaderboardTab({ results }) {
     </div>
   )
   const categories = Object.entries(AWARD_LABELS).filter(([key]) => results[key]?.length > 0)
-  
+
   if (categories.length === 0) return (
     <div className="glass-card p-12 text-center border-white/5 bg-white/[0.02]">
       <p className="text-white/20 text-xs font-bold uppercase tracking-[0.3em] italic">No Data Stream Found</p>
@@ -60,9 +60,9 @@ function LeaderboardTab({ results }) {
       <div className="glass-card p-6 bg-gradient-to-br from-gold-500/[0.05] to-transparent border-gold-500/10">
         <h3 className="text-gold-500 font-black text-[10px] tracking-[0.3em] uppercase mb-6 text-center">🏆 Hall of Legends</h3>
         <div className="flex gap-4 justify-center items-end">
-          {featured.flatMap(f => f.top).sort((a,b) => b.count - a.count).slice(0, 3).map((entry, i) => {
+          {featured.flatMap(f => f.top).sort((a, b) => b.count - a.count).slice(0, 3).map((entry, i) => {
             const height = [100, 80, 65][i]
-            const medal = ['🥇','🥈','🥉'][i]
+            const medal = ['🥇', '🥈', '🥉'][i]
             return (
               <motion.div
                 key={i}
@@ -95,8 +95,8 @@ function LeaderboardTab({ results }) {
           const entries = results[key] || []
           const total = entries.reduce((s, e) => s + e.count, 0)
           return (
-            <motion.div 
-              key={key} 
+            <motion.div
+              key={key}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -114,7 +114,7 @@ function LeaderboardTab({ results }) {
                   <span className="text-white/20 text-[8px] font-black uppercase tracking-tighter">TOTAL VOTES</span>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 {entries.slice(0, 3).map((entry, i) => (
                   <div key={i} className="relative">
@@ -168,8 +168,8 @@ function CategoriesTab({ results }) {
         if (entries.length === 0) return null
         const chartData = entries.map(e => ({ name: e.name.split(' ')[0], votes: e.count }))
         return (
-          <motion.div 
-            key={key} 
+          <motion.div
+            key={key}
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
       const q = query(collection(db, 'votes'), orderBy('created_at', 'desc'))
       const snapshot = await getDocs(q)
       const allVotes = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.is_active !== false)
-      
+
       // Client-side aggregation
       const aggregatedResults = {}
       Object.keys(AWARD_LABELS).forEach(field => {
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
       const q = query(collection(db, 'votes'))
       const snapshot = await getDocs(q)
       const batch = writeBatch(db)
-      
+
       snapshot.docs.forEach((docSnap) => {
         if (mode === 'hard') {
           batch.delete(docSnap.ref)
@@ -337,9 +337,9 @@ export default function AdminDashboard() {
           batch.update(docSnap.ref, { is_active: false })
         }
       })
-      
+
       await batch.commit()
-      
+
       setResetMessage({ text: 'Database Reset Successful!', type: 'success' })
       setTimeout(() => {
         setIsResetModalOpen(false)
@@ -360,7 +360,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-[#030303] flex items-center justify-center px-6 relative overflow-hidden">
         <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-gold-500/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gold-600/10 blur-[120px] rounded-full" />
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -371,7 +371,7 @@ export default function AdminDashboard() {
           </div>
           <h1 className="text-2xl font-black text-white mb-2 tracking-tight">Admin Terminal</h1>
           <p className="text-white/30 text-[10px] font-bold tracking-[0.2em] uppercase mb-8">Authorizing Personnel Only</p>
-          
+
           <div className="space-y-4">
             <div className="relative">
               <input
@@ -388,14 +388,14 @@ export default function AdminDashboard() {
                 </svg>
               </div>
             </div>
-            
+
             {authError && <p className="text-red-400 text-[10px] font-bold uppercase tracking-wider">{authError}</p>}
-            
+
             <button onClick={handleAuth} className="btn-gold w-full h-14 relative overflow-hidden group">
               <div className="absolute inset-0 glass-reflection opacity-20 group-hover:translate-x-full transition-transform duration-1000" />
               <span className="relative font-black tracking-[0.2em] uppercase text-xs">Initialize Dashboard</span>
             </button>
-            
+
             <button onClick={() => navigate('/')} className="text-white/20 text-[10px] font-bold uppercase tracking-widest hover:text-white/40 transition-colors pt-4 block w-full">
               ← Return to Civilian Site
             </button>
@@ -407,8 +407,8 @@ export default function AdminDashboard() {
 
   const TABS = [
     { id: 'leaderboard', label: 'Rankings', icon: '🏆' },
-    { id: 'categories',  label: 'Analytics', icon: '📊' },
-    { id: 'auditlog',    label: 'History',   icon: '📋' },
+    { id: 'categories', label: 'Analytics', icon: '📊' },
+    { id: 'auditlog', label: 'History', icon: '📋' },
   ]
 
   return (
@@ -458,11 +458,10 @@ export default function AdminDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center justify-center gap-2 ${
-                activeTab === tab.id
+              className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center justify-center gap-2 ${activeTab === tab.id
                   ? 'bg-gold-500 text-dark-800 shadow-xl shadow-gold-500/20'
                   : 'text-white/30 hover:text-white/50'
-              }`}
+                }`}
             >
               <span className="text-sm">{tab.icon}</span>
               <span className="hidden sm:inline">{tab.label}</span>
@@ -482,8 +481,8 @@ export default function AdminDashboard() {
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
           >
             {activeTab === 'leaderboard' && <LeaderboardTab results={results} />}
-            {activeTab === 'categories'  && <CategoriesTab  results={results} />}
-            {activeTab === 'auditlog'    && <AuditLogTab    votes={votes} />}
+            {activeTab === 'categories' && <CategoriesTab results={results} />}
+            {activeTab === 'auditlog' && <AuditLogTab votes={votes} />}
           </motion.div>
         </AnimatePresence>
       </div>
