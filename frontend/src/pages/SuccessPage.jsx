@@ -23,10 +23,10 @@ export default function SuccessPage() {
 
     setTimeout(() => {
       fire(0.25, { spread: 26, startVelocity: 55 })
-      fire(0.2,  { spread: 60 })
+      fire(0.2, { spread: 60 })
       fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 })
-      fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 })
-      fire(0.1,  { spread: 120, startVelocity: 45 })
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 })
+      fire(0.1, { spread: 120, startVelocity: 45 })
     }, 400)
   }, [])
 
@@ -42,15 +42,15 @@ export default function SuccessPage() {
           <motion.div
             key={i}
             initial={{ y: -10, x: Math.random() * 400, opacity: 0 }}
-            animate={{ 
-              y: 800, 
+            animate={{
+              y: 800,
               opacity: [0, 1, 0],
-              rotate: 360 
+              rotate: 360
             }}
-            transition={{ 
-              duration: 5 + Math.random() * 5, 
+            transition={{
+              duration: 5 + Math.random() * 5,
               repeat: Infinity,
-              delay: Math.random() * 5 
+              delay: Math.random() * 5
             }}
             className="absolute w-1 h-1 bg-gold-400 rounded-full"
             style={{ left: `${Math.random() * 100}%` }}
@@ -81,7 +81,7 @@ export default function SuccessPage() {
 
         <h1 className="text-3xl font-black text-white mb-2 tracking-tight uppercase">Votes Locked</h1>
         <p className="text-gold-500/50 text-[10px] font-bold tracking-[0.3em] uppercase mb-10">Legend Registry Complete</p>
-        
+
         <div className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-6 mb-10 backdrop-blur-sm group">
           <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em] mb-3">Transmission Receipt</p>
           <div className="flex flex-col items-center justify-center gap-1">
@@ -113,13 +113,13 @@ export default function SuccessPage() {
             <div className="absolute inset-0 glass-reflection opacity-20" />
             <span className="relative font-black tracking-[0.2em] uppercase text-xs">Return to Home</span>
           </motion.button>
-          
-          <button
+
+          {/* <button
             onClick={() => navigate('/admin')}
             className="w-full h-14 rounded-2xl bg-white/[0.03] border border-white/5 text-white/40 font-bold text-[10px] tracking-widest uppercase hover:bg-white/[0.08] hover:text-white transition-all"
           >
             View Live Results
-          </button>
+          </button> */}
         </div>
 
         <p className="text-white/10 text-[8px] font-bold uppercase tracking-[0.4em] mt-10">Class of 2026 • Immortalized</p>
