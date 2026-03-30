@@ -19,11 +19,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (localStorage.getItem('voted') === 'true') {
-      navigate('/success')
-    }
-  }, [navigate])
+  // Effect removed to allow users to see the login page if they click 'Return to Home'
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault()
@@ -48,10 +44,9 @@ export default function LoginPage() {
       const docSnap = await getDoc(docRef)
       
       if (docSnap.exists() && docSnap.data().is_active !== false) {
-        localStorage.setItem('voted', 'true')
-        localStorage.setItem('rollNumber', formattedRoll)
-        localStorage.setItem('receiptId', docSnap.data().receiptId || 'VOTE-ALREADY-SUBMITTED')
-        navigate('/success')
+        setError('You have already submitted your votes for this registration number.')
+        setLoading(false)
+        return
       } else {
         localStorage.setItem('rollNumber', formattedRoll)
         navigate('/vote')

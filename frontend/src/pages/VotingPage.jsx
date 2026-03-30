@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { db } from '../firebase'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { STUDENTS } from '../constants'
 
 const AWARDS = [
   { key: 'sleepy_head',          emoji: '😴', title: 'Mr / Ms Sleepy Head',       desc: 'The one who mastered the art of sleeping during lectures without getting caught.' },
@@ -25,6 +26,8 @@ export default function VotingPage() {
   const [error, setError] = useState('')
   const [direction, setDirection] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
   const rollNumber = localStorage.getItem('rollNumber')
 
   useEffect(() => {
@@ -61,6 +64,16 @@ export default function VotingPage() {
   const award = AWARDS[current]
   const progress = ((current + 1) / AWARDS.length) * 100
   const isLast = current === AWARDS.length - 1
+
+  const filteredStudents = STUDENTS.filter(s => 
+    s.toLowerCase().includes(inputVal.toLowerCase())
+  ).slice(0, 8) // Limit to 8 for performance/UI
+
+  const handleSelect = (name) => {
+    setInputVal(name)
+    setIsOpen(false)
+    setActiveIndex(0)
+  }
 
   const handleNext = async () => {
     const val = inputVal.trim()
@@ -199,16 +212,39 @@ export default function VotingPage() {
               </div>
 
               {/* Input Section */}
-              <div className="mt-auto">
+              <div className="mt-auto relative">
                 <div className="relative">
                   <input
                     id={`vote-input-${award.key}`}
                     type="text"
                     className="glass-input pl-12"
-                    placeholder="Nominate someone..."
+                    placeholder="Search classmate..."
                     value={inputVal}
-                    onChange={e => { setInputVal(e.target.value); setError('') }}
-                    onKeyDown={e => e.key === 'Enter' && handleNext()}
+                    onFocus={() => setIsOpen(true)}
+                    onChange={e => { 
+                      setInputVal(e.target.value)
+                      setError('')
+                      setIsOpen(true)
+                      setActiveIndex(0)
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault()
+                        setActiveIndex(prev => (prev + 1) % filteredStudents.length)
+                      } else if (e.key === 'ArrowUp') {
+                        e.preventDefault()
+                        setActiveIndex(prev => (prev - 1 + filteredStudents.length) % filteredStudents.length)
+                      } else if (e.key === 'Enter') {
+                        if (isOpen && filteredStudents.length > 0) {
+                          e.preventDefault()
+                          handleSelect(filteredStudents[activeIndex])
+                        } else {
+                          handleNext()
+                        }
+                      } else if (e.key === 'Escape') {
+                        setIsOpen(false)
+                      }
+                    }}
                     autoFocus
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gold-500/40">
@@ -217,6 +253,37 @@ export default function VotingPage() {
                     </svg>
                   </div>
                 </div>
+
+                {/* Searchable Dropdown */}
+                <AnimatePresence>
+                  {isOpen && inputVal.length > 0 && filteredStudents.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                      className="absolute bottom-full left-0 w-full mb-3 glass-card border-white/10 overflow-hidden z-50 shadow-2xl backdrop-blur-xl"
+                    >
+                      <div className="max-h-60 overflow-y-auto premium-scrollbar">
+                        {filteredStudents.map((student, idx) => (
+                          <button
+                            key={student}
+                            onClick={() => handleSelect(student)}
+                            onMouseEnter={() => setActiveIndex(idx)}
+                            className={`w-full text-left px-6 py-4 text-xs font-bold transition-all duration-200 border-b border-white/5 last:border-0 flex items-center justify-between group
+                              ${activeIndex === idx ? 'bg-gold-500/10 text-gold-500' : 'text-white/40 hover:text-white/60'}
+                            `}
+                          >
+                            <span className="tracking-widest uppercase">{student}</span>
+                            {activeIndex === idx && (
+                              <motion.span layoutId="active-indicator" className="text-gold-500 text-[10px]">SELECT</motion.span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {error && (
                   <motion.p
                     initial={{ opacity: 0, y: -5 }}

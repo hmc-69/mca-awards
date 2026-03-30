@@ -102,7 +102,12 @@ export default function SuccessPage() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/')}
+            onClick={() => {
+              localStorage.removeItem('voted')
+              localStorage.removeItem('rollNumber')
+              localStorage.removeItem('receiptId')
+              navigate('/')
+            }}
             className="btn-gold w-full h-14 relative overflow-hidden group"
           >
             <div className="absolute inset-0 glass-reflection opacity-20" />

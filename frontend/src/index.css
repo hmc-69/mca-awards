@@ -78,6 +78,20 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .premium-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .premium-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .premium-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+  }
+  .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.4);
+  }
 }
 
 /* Custom scrollbar */
